@@ -72,12 +72,12 @@ func (c *Client) readLine() (string, error) {
 }
 
 func (c *Client) notifySyntaxError() {
-  c.out.WriteString("500 Syntax Error\n")
+  c.out.WriteString("500 Syntax Error\r\n")
   c.out.Flush()
 }
 
 func (c *Client) notifyOk() error {
-  _, err := c.out.WriteString("250 Ok\n")
+  _, err := c.out.WriteString("250 Ok\r\n")
   if err != nil {
     return err
   }
@@ -86,7 +86,7 @@ func (c *Client) notifyOk() error {
 }
 
 func (c *Client) notifyServiceReady() error {
-  _, err := c.out.WriteString(fmt.Sprintf("220 %s\n", config.GetFQDN()))
+  _, err := c.out.WriteString(fmt.Sprintf("220 %s\r\n", config.GetFQDN()))
   if err != nil {
     return err
   }
@@ -95,7 +95,7 @@ func (c *Client) notifyServiceReady() error {
 }
 
 func (c *Client) notifyStartMailInput() error {
-  _, err := c.out.WriteString("354 Start Mail Input\n")
+  _, err := c.out.WriteString("354 Start Mail Input\r\n")
   if err != nil {
     return err
   }
@@ -104,7 +104,7 @@ func (c *Client) notifyStartMailInput() error {
 }
 
 func (c *Client) notifyBadSequence() error {
-  _, err := c.out.WriteString("503 Bad Sequence\n")
+  _, err := c.out.WriteString("503 Bad Sequence\r\n")
   if err != nil {
     return err
   }
