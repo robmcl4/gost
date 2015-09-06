@@ -1,4 +1,4 @@
-package server
+package smtp_server
 
 import (
   "net"
