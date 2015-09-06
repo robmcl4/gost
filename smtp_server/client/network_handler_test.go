@@ -1,4 +1,4 @@
-package smtp_server
+package client
 
 import (
   "testing"
@@ -33,21 +33,21 @@ func TestSplitVerbLengthExtraSpace(t *testing.T) {
 
 func TestClientNotifySyntaxError(t *testing.T) {
   mybuf := new(bytes.Buffer)
-  c := client{nil, bufio.NewReader(new(bytes.Buffer)), bufio.NewWriter(mybuf)}
+  c := Client{nil, bufio.NewReader(new(bytes.Buffer)), bufio.NewWriter(mybuf)}
   c.notifySyntaxError()
   assert.Equal(t, "500 Syntax Error\n", mybuf.String())
 }
 
 func TestClientNotifyOk(t *testing.T) {
   mybuf := new(bytes.Buffer)
-  c := client{nil, bufio.NewReader(new(bytes.Buffer)), bufio.NewWriter(mybuf)}
+  c := Client{nil, bufio.NewReader(new(bytes.Buffer)), bufio.NewWriter(mybuf)}
   c.notifyOk()
   assert.Equal(t, "250 Ok\n", mybuf.String())
 }
 
 func TestGetCommand(t *testing.T) {
   reader := bytes.NewBufferString("MAIL FROM:<foo@bar.com>\n")
-  c := client{nil, bufio.NewReader(reader), bufio.NewWriter(new(bytes.Buffer))}
+  c := Client{nil, bufio.NewReader(reader), bufio.NewWriter(new(bytes.Buffer))}
   verb, extra, err := c.getCommand()
   assert.Nil(t, err, "should have no errors")
   assert.Equal(t, "MAIL", verb)
@@ -57,7 +57,7 @@ func TestGetCommand(t *testing.T) {
 func TestGetCommandNOOP(t *testing.T) {
   reader := bytes.NewBufferString("NOOP\nMAIL FROM:<foo@bar.com>\n")
   writer := new(bytes.Buffer)
-  c := client{nil, bufio.NewReader(reader), bufio.NewWriter(writer)}
+  c := Client{nil, bufio.NewReader(reader), bufio.NewWriter(writer)}
   verb, extra, err := c.getCommand()
   assert.Nil(t, err, "should have no errors")
   assert.Equal(t, "MAIL", verb)
@@ -68,7 +68,7 @@ func TestGetCommandNOOP(t *testing.T) {
 func TestGetCommandError(t *testing.T) {
   reader := bytes.NewBufferString("FO\n")
   writer := new(bytes.Buffer)
-  c := client{nil, bufio.NewReader(reader), bufio.NewWriter(writer)}
+  c := Client{nil, bufio.NewReader(reader), bufio.NewWriter(writer)}
   verb, extra, err := c.getCommand()
   assert.Equal(t, "", verb, "should have no verb")
   assert.Equal(t, "", extra, "should have no extra")

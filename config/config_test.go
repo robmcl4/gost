@@ -17,3 +17,11 @@ func TestDefaultHost(t *testing.T) {
     GetListenAddress(),
     "default address should be 127.0.0.1")
 }
+
+func TestDefaultFQDN(t *testing.T) {
+  assert.Equal(
+    t,
+    "mail.example.com",
+    GetFQDN(),
+    "default FQDN should be mail.example.com")
+}
