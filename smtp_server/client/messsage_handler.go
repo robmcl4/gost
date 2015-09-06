@@ -72,6 +72,10 @@ func (c *Client) getEmail() (*email.SMTPEmail, error) {
     }
     if match := toRegexp.FindStringSubmatch(extra); match != nil {
       ret.To = append(ret.To, match[0])
+      err = c.notifyOk()
+      if err != nil {
+        return nil, err
+      }
     } else {
       c.notifySyntaxError()
       return nil, fmt.Errorf("Couldn't find recipient email: %s", extra)
