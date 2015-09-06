@@ -24,6 +24,7 @@ func handleClient(conn net.Conn, c chan *email.SMTPEmail) {
   client := client.MakeClient(conn)
   err := client.BeginReceive(c)
   if err != nil {
+    client.Close()
     fmt.Printf("ERROR: %s\n", err.Error())
   }
 }

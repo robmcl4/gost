@@ -112,6 +112,16 @@ func (c *Client) notifyBadSequence() error {
   return err
 }
 
+func (c *Client) notifyTerminateConnection() error {
+  _, err := c.out.WriteString("421 " +
+                              "Service Unavailable: Terminating Connection\r\n")
+  if err != nil {
+    return err
+  }
+  err = c.out.Flush()
+  return err
+}
+
 // - Utilities -----------------------------------------------------------------
 
 // Checks that a command is formatted exactly "ABCD" or "ABCD EFG XYZ"

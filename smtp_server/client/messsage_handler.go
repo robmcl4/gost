@@ -6,6 +6,12 @@ import (
   "github.com/robmcl4/gost/smtp_server/email"
 )
 
+func (c *Client) Close() error {
+  c.out.Flush()
+  c.notifyTerminateConnection()
+  return c.conn.Close()
+}
+
 // Begins receiving messages on the client connection.
 // Clients are expected to begin with a HELO message.
 // Any emails received are put onto the channel.

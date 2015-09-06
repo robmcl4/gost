@@ -66,6 +66,15 @@ func TestClientNotifyStartMailInput(t *testing.T) {
   assert.Equal(t, "354 Start Mail Input\r\n", mybuf.String())
 }
 
+func TestClientNotifyTerminatingConnection(t *testing.T) {
+  mybuf := new(bytes.Buffer)
+  c := Client{nil, bufio.NewReader(new(bytes.Buffer)), bufio.NewWriter(mybuf)}
+  c.notifyTerminateConnection()
+  assert.Equal(t,
+               "421 Service Unavailable: Terminating Connection\r\n",
+               mybuf.String())
+}
+
 func TestGetCommand(t *testing.T) {
   reader := bytes.NewBufferString("MAIL FROM:<foo@bar.com>\r\n")
   c := Client{nil, bufio.NewReader(reader), bufio.NewWriter(new(bytes.Buffer))}
