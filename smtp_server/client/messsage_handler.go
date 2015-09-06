@@ -55,7 +55,7 @@ func (c *Client) getEmail() (*email.SMTPEmail, error) {
     return nil, fmt.Errorf("Expected MAIL but got %s", verb)
   }
   if match := fromRegexp.FindStringSubmatch(extra); match != nil {
-    ret.From = match[0]
+    ret.From = match[1]
   }
   err = c.notifyOk()
   if err != nil {
@@ -71,7 +71,7 @@ func (c *Client) getEmail() (*email.SMTPEmail, error) {
       return nil, err
     }
     if match := toRegexp.FindStringSubmatch(extra); match != nil {
-      ret.To = append(ret.To, match[0])
+      ret.To = append(ret.To, match[1])
       err = c.notifyOk()
       if err != nil {
         return nil, err
