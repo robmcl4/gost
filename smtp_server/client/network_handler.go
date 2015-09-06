@@ -1,6 +1,7 @@
 package client
 
 import (
+  "errors"
   "fmt"
   "strings"
   "regexp"
@@ -23,6 +24,8 @@ func (c *Client) getCommand() (verb string, extra string, err error) {
       if err != nil {
         return "", "", err
       }
+    } else if verb == "QUIT" {
+      return "", "", errors.New("Client asked to quit")
     } else {
       return
     }

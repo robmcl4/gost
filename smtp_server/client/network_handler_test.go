@@ -95,6 +95,15 @@ func TestGetCommandNOOP(t *testing.T) {
   assert.Equal(t, "250 Ok\r\n", writer.String())
 }
 
+func TestGetCommandQUIT(t *testing.T) {
+  reader := bytes.NewBufferString("QUIT\r\n")
+  writer := new(bytes.Buffer)
+  c := Client{nil, bufio.NewReader(reader), bufio.NewWriter(writer)}
+  _, _, err := c.getCommand()
+  assert.NotNil(t, err)
+}
+
+
 func TestGetCommandError(t *testing.T) {
   reader := bytes.NewBufferString("FO\r\n")
   writer := new(bytes.Buffer)
