@@ -43,11 +43,8 @@ func (m *mylistener) Addr() net.Addr {
 }
 
 func TestListenForConnection(t *testing.T) {
-  c := make(chan bool)
-  h := func(conn net.Conn) {
-    c <- true
-  }
-  err := listenForConnections(&mylistener{}, h)
+  c := make(chan net.Conn, 1)
+  err := listenForConnections(&mylistener{}, c)
   assert.Equal(t, "myerror", err.Error(), "error message should be \"foo\"")
   <- c
 }
