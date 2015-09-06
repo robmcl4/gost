@@ -87,8 +87,16 @@ func (c *Client) getEmail() (*email.SMTPEmail, error) {
     c.notifyBadSequence()
     return nil, fmt.Errorf("Expected DATA command, got %s", verb)
   }
+  err = c.notifyStartMailInput()
+  if err != nil {
+    return nil, err
+  }
   // let's receive data...
   ret.Data, err = c.readDataBody()
+  if err != nil {
+    return nil, err
+  }
+  err = c.notifyOk()
   if err != nil {
     return nil, err
   }

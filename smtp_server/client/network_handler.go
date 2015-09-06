@@ -3,7 +3,6 @@ package client
 import (
   "fmt"
   "strings"
-  "errors"
   "regexp"
   "bytes"
   "github.com/robmcl4/gost/config"
@@ -95,8 +94,17 @@ func (c *Client) notifyServiceReady() error {
   return err
 }
 
+func (c *Client) notifyStartMailInput() error {
+  _, err := c.out.WriteString("354 Start Mail Input\n")
+  if err != nil {
+    return err
+  }
+  err = c.out.Flush()
+  return err
+}
+
 func (c *Client) notifyBadSequence() error {
-  _, err := c.out.WriteString("503 Bad Sequence")
+  _, err := c.out.WriteString("503 Bad Sequence\n")
   if err != nil {
     return err
   }
@@ -109,7 +117,7 @@ func (c *Client) notifyBadSequence() error {
 // Checks that a command is formatted exactly "ABCD" or "ABCD EFG XYZ"
 func checkCmdSyntax(s string) error {
   if !checkCmdSyntaxRegexp.MatchString(s) {
-    return errors.New("Syntax Error")
+    return fmt.Errorf("Syntax Error: got %s", s)
   }
   return nil
 }

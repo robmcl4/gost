@@ -45,6 +45,27 @@ func TestClientNotifyOk(t *testing.T) {
   assert.Equal(t, "250 Ok\n", mybuf.String())
 }
 
+func TestClientNotifyServiceReady(t *testing.T) {
+  mybuf := new(bytes.Buffer)
+  c := Client{nil, bufio.NewReader(new(bytes.Buffer)), bufio.NewWriter(mybuf)}
+  c.notifyServiceReady()
+  assert.Equal(t, "220 mail.example.com\n", mybuf.String())
+}
+
+func TestClientNotifyBadSequence(t *testing.T) {
+  mybuf := new(bytes.Buffer)
+  c := Client{nil, bufio.NewReader(new(bytes.Buffer)), bufio.NewWriter(mybuf)}
+  c.notifyBadSequence()
+  assert.Equal(t, "503 Bad Sequence\n", mybuf.String())
+}
+
+func TestClientNotifyStartMailInput(t *testing.T) {
+  mybuf := new(bytes.Buffer)
+  c := Client{nil, bufio.NewReader(new(bytes.Buffer)), bufio.NewWriter(mybuf)}
+  c.notifyStartMailInput()
+  assert.Equal(t, "354 Start Mail Input\n", mybuf.String())
+}
+
 func TestGetCommand(t *testing.T) {
   reader := bytes.NewBufferString("MAIL FROM:<foo@bar.com>\n")
   c := Client{nil, bufio.NewReader(reader), bufio.NewWriter(new(bytes.Buffer))}
@@ -74,4 +95,25 @@ func TestGetCommandError(t *testing.T) {
   assert.Equal(t, "", extra, "should have no extra")
   assert.NotNil(t, err, "should have an error")
   assert.Equal(t, "500 Syntax Error\n", writer.String())
+}
+
+func TestReadDataBody(t *testing.T) {
+  reader := bytes.NewBufferString("FOO\r\nBAR\r\n.\r\n")
+  c := Client{nil, bufio.NewReader(reader), bufio.NewWriter(new(bytes.Buffer))}
+  got, err := c.readDataBody()
+  assert.Nil(t, err)
+  assert.Equal(t, "FOO\r\nBAR\r\n", got)
+}
+
+func TestCheckCmdSyntaxTooShort(t *testing.T) {
+  assert.NotNil(t, checkCmdSyntax("FO"))
+}
+
+func TestCheckCmdSyntaxNoSpace(t *testing.T) {
+  assert.NotNil(t, checkCmdSyntax("ABCDEFG"))
+}
+
+func TestCheckCmdSyntaxLowercase(t *testing.T) {
+  assert.NotNil(t, checkCmdSyntax("abcd"))
+  assert.NotNil(t, checkCmdSyntax("abcd efg"))
 }

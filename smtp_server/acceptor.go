@@ -14,6 +14,7 @@ func getServerConnection() (net.Listener, error) {
 }
 
 func listenForConnections(l net.Listener, c chan net.Conn) error {
+  fmt.Println("Started listening for connections")
   for {
     conn, err := l.Accept()
     if err != nil {
