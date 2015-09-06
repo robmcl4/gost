@@ -38,6 +38,13 @@ func TestClientNotifySyntaxError(t *testing.T) {
   assert.Equal(t, "500 Syntax Error\n", mybuf.String())
 }
 
+func TestClientNotifyOk(t *testing.T) {
+  mybuf := new(bytes.Buffer)
+  c := client{nil, bufio.NewReader(new(bytes.Buffer)), bufio.NewWriter(mybuf)}
+  c.notifyOk()
+  assert.Equal(t, "250 Ok\n", mybuf.String())
+}
+
 func TestGetCommand(t *testing.T) {
   reader := bytes.NewBufferString("MAIL FROM:<foo@bar.com>\n")
   c := client{nil, bufio.NewReader(reader), bufio.NewWriter(new(bytes.Buffer))}
@@ -45,6 +52,17 @@ func TestGetCommand(t *testing.T) {
   assert.Nil(t, err, "should have no errors")
   assert.Equal(t, "MAIL", verb)
   assert.Equal(t, "FROM:<foo@bar.com>", extra)
+}
+
+func TestGetCommandNOOP(t *testing.T) {
+  reader := bytes.NewBufferString("NOOP\nMAIL FROM:<foo@bar.com>\n")
+  writer := new(bytes.Buffer)
+  c := client{nil, bufio.NewReader(reader), bufio.NewWriter(writer)}
+  verb, extra, err := c.getCommand()
+  assert.Nil(t, err, "should have no errors")
+  assert.Equal(t, "MAIL", verb)
+  assert.Equal(t, "FROM:<foo@bar.com>", extra)
+  assert.Equal(t, "250 Ok\n", writer.String())
 }
 
 func TestGetCommandError(t *testing.T) {

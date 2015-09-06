@@ -8,6 +8,8 @@ import (
   "regexp"
 )
 
+// - Client --------------------------------------------------------------------
+
 type client struct {
   conn net.Conn
   in   *bufio.Reader
@@ -22,10 +24,27 @@ func makeClient(c net.Conn) client {
 
 // Gets an SMTP command from the client.
 // Verb is the 4-letter SMTP verb.
-// Extra is any characters appearing after the verb (trimmed)
+// Extra is any characters appearing after the verb (trimmed).
+// When the client requests a NOOP, responds 250 OK and continues reading for
+// next command without returning the NOOP.
 // On error condition, responds to client with 500 Syntax Error. Never attempts
 // to close the connection.
 func (c *client) getCommand() (verb string, extra string, err error) {
+  for {
+    verb, extra, err = c.getSingleCommand()
+    if verb == "NOOP" {
+      err = c.notifyOk()
+      if err != nil {
+        return "", "", err
+      }
+    } else {
+      return
+    }
+  }
+}
+
+// Gets a single command. Unlike getCommand, this may return the NOOP verb.
+func (c *client) getSingleCommand() (verb string, extra string, err error) {
   line, err := c.readLine()
   if err != nil {
     return
@@ -55,7 +74,16 @@ func (c *client) notifySyntaxError() {
   c.out.Flush()
 }
 
-// -----------------------------------------------------------------------------
+func (c *client) notifyOk() error {
+  _, err := c.out.WriteString("250 Ok\n")
+  if err != nil {
+    return err
+  }
+  err = c.out.Flush()
+  return err
+}
+
+// - Utilities -----------------------------------------------------------------
 
 // Checks that a command is formatted exactly "ABCD" or "ABCD EFG XYZ"
 func checkCmdSyntax(s string) error {
