@@ -88,8 +88,21 @@ func (c *Client) notifyOk() error {
   return err
 }
 
+func (c *Client) notifyEhlo() error {
+  toWrite := fmt.Sprintf("250-%s supports TWO extensions:\r\n",
+                         config.GetFQDN()) +
+             "250-8BITMIME\r\n" +
+             "250 SIZE\r\n"
+  _, err := c.out.WriteString(toWrite)
+  if err != nil {
+    return err
+  }
+  err = c.out.Flush()
+  return err
+}
+
 func (c *Client) notifyServiceReady() error {
-  _, err := c.out.WriteString(fmt.Sprintf("220 %s\r\n", config.GetFQDN()))
+  _, err := c.out.WriteString(fmt.Sprintf("220 %s ESMTP\r\n", config.GetFQDN()))
   if err != nil {
     return err
   }

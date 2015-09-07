@@ -45,11 +45,18 @@ func TestClientNotifyOk(t *testing.T) {
   assert.Equal(t, "250 Ok\r\n", mybuf.String())
 }
 
+func TestClientNotifyEhlo(t *testing.T) {
+  mybuf := new(bytes.Buffer)
+  c := Client{nil, bufio.NewReader(new(bytes.Buffer)), bufio.NewWriter(mybuf)}
+  c.notifyEhlo()
+  assert.True(t, len(mybuf.String()) > 40, "should have a bunch of chars")
+}
+
 func TestClientNotifyServiceReady(t *testing.T) {
   mybuf := new(bytes.Buffer)
   c := Client{nil, bufio.NewReader(new(bytes.Buffer)), bufio.NewWriter(mybuf)}
   c.notifyServiceReady()
-  assert.Equal(t, "220 mail.example.com\r\n", mybuf.String())
+  assert.Equal(t, "220 mail.example.com ESMTP\r\n", mybuf.String())
 }
 
 func TestClientNotifyBadSequence(t *testing.T) {
