@@ -91,8 +91,7 @@ func (c *Client) notifyOk() error {
 func (c *Client) notifyEhlo() error {
   toWrite := fmt.Sprintf("250-%s supports TWO extensions:\r\n",
                          config.GetFQDN()) +
-             "250-8BITMIME\r\n" +
-             "250 SIZE\r\n"
+             "250 8BITMIME\r\n"
   _, err := c.out.WriteString(toWrite)
   if err != nil {
     return err

@@ -34,6 +34,6 @@ func handleClient(conn net.Conn, c chan *email.SMTPEmail) {
     client.Close()
     log.WithFields(log.Fields{
       "error": err.Error(),
-    }).Error("client encountered error while receiving messages")
+    }).Info("closing client connection")
   }
 }

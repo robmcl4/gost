@@ -59,6 +59,9 @@ func (c *Client) getEmail() (*email.SMTPEmail, error) {
   ret := new(email.SMTPEmail)
   // get the MAIL command
   verb, extra, err := c.getCommand()
+  if err != nil {
+    return nil, err
+  }
   if verb != "MAIL" {
     c.notifyBadSequence()
     return nil, fmt.Errorf("Expected MAIL but got %s", verb)
