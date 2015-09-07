@@ -3,7 +3,7 @@ package client
 import (
   "fmt"
   "regexp"
-  "github.com/robmcl4/gost/smtp_server/email"
+  "github.com/robmcl4/gost/email"
 )
 
 func (c *Client) Close() error {

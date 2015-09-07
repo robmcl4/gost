@@ -15,8 +15,12 @@ func getServerConnection() (net.Listener, error) {
 }
 
 func listenForConnections(l net.Listener, c chan net.Conn) error {
+  listeningAddr := "<nil>"
+  if l.Addr() != nil {
+    listeningAddr = l.Addr().String()
+  }
   log.WithFields(log.Fields{
-    "listening_on": l.Addr().String(),
+    "listening_on": listeningAddr,
     "fqdn": config.GetFQDN(),
   }).Info("Starting connection listener")
   for {

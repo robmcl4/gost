@@ -2,7 +2,7 @@ package main
 
 import (
   "fmt"
-  "github.com/robmcl4/gost/smtp_server/email"
+  "github.com/robmcl4/gost/email"
   "github.com/robmcl4/gost/smtp_server"
   log "github.com/Sirupsen/logrus"
 )

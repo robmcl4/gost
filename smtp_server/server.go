@@ -2,7 +2,7 @@ package smtp_server
 
 import (
   "net"
-  "github.com/robmcl4/gost/smtp_server/email"
+  "github.com/robmcl4/gost/email"
   "github.com/robmcl4/gost/smtp_server/client"
   log "github.com/Sirupsen/logrus"
 )
