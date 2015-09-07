@@ -2,9 +2,9 @@ package smtp_server
 
 import (
   "net"
-  "fmt"
   "github.com/robmcl4/gost/smtp_server/email"
   "github.com/robmcl4/gost/smtp_server/client"
+  log "github.com/Sirupsen/logrus"
 )
 
 func ReceiveEmail(c chan *email.SMTPEmail) error {
@@ -13,10 +13,17 @@ func ReceiveEmail(c chan *email.SMTPEmail) error {
     return err
   }
   cxnChan := make(chan net.Conn, 10)
-  go listenForConnections(l, cxnChan)
+  go handleClients(cxnChan, c)
+  err = listenForConnections(l, cxnChan)
+  if err != nil {
+    return err
+  }
+  return nil
+}
+
+func handleClients(cxnChan chan net.Conn, emChan chan *email.SMTPEmail) {
   for {
-    conn := <- cxnChan
-    go handleClient(conn, c)
+    go handleClient(<- cxnChan, emChan)
   }
 }
 
@@ -25,6 +32,8 @@ func handleClient(conn net.Conn, c chan *email.SMTPEmail) {
   err := client.BeginReceive(c)
   if err != nil {
     client.Close()
-    fmt.Printf("ERROR: %s\n", err.Error())
+    log.WithFields(log.Fields{
+      "error": err.Error(),
+    }).Error("client encountered error while receiving messages")
   }
 }

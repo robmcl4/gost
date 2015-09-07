@@ -3,6 +3,7 @@ package smtp_server
 import (
   "net"
   "fmt"
+  log "github.com/Sirupsen/logrus"
   "github.com/robmcl4/gost/config"
 )
 
@@ -14,7 +15,10 @@ func getServerConnection() (net.Listener, error) {
 }
 
 func listenForConnections(l net.Listener, c chan net.Conn) error {
-  fmt.Println("Started listening for connections")
+  log.WithFields(log.Fields{
+    "listening_on": l.Addr().String(),
+    "fqdn": config.GetFQDN(),
+  }).Info("Starting connection listener")
   for {
     conn, err := l.Accept()
     if err != nil {
