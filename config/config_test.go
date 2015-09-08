@@ -25,3 +25,11 @@ func TestDefaultFQDN(t *testing.T) {
     GetFQDN(),
     "default FQDN should be mail.example.com")
 }
+
+func TestDefaultEmailTTL(t *testing.T) {
+  assert.Equal(
+    t,
+    15*60,
+    GetEmailTTL(),
+    "default email TTL should be 15min")
+}
