@@ -23,3 +23,20 @@ func FromJson(s string) (*SMTPEmail, error) {
   }
   return ret, nil
 }
+
+type ParsedEmail struct {
+  Original *SMTPEmail
+  Headers  []Header
+  Parts    []Part
+}
+
+type Header struct {
+  Key string
+  Val string
+}
+
+type Part struct {
+  Headers []Header
+  Bindata []byte
+  Parsed  *string
+}
