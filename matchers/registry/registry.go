@@ -97,3 +97,12 @@ func GarbageCollect() {
 func Size() int64 {
   return matcherListSize
 }
+
+// Removes all matchers in the collection.
+func Clear() {
+  matcherListLock.Lock()
+  matcherListHead = nil
+  matcherListTail = nil
+  matcherListSize = 0
+  matcherListLock.Unlock()
+}
