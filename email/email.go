@@ -1,0 +1,36 @@
+package email
+
+import (
+  "bytes"
+  "net/mail"
+  "github.com/jhillyerd/go.enmime"
+)
+
+type SMTPEmail struct {
+  To       []string
+  From     string
+  Contents []byte
+  parsed   *enmime.MIMEBody
+}
+
+// Parses this email as MIME.
+// Returns the email, or an error if one occurred.
+func (e *SMTPEmail) Parse() (*enmime.MIMEBody, error) {
+  if e.parsed != nil {
+    // it's memoized
+    return e.parsed
+  }
+
+  msg, err := mail.ReadMessage(bytes.NewReader(e.Contents))
+  if err != nil {
+    return nil, err
+  }
+
+  ret, err := enmime.ParseMIMEBody(msg)
+  if err != nil {
+    return nil, err
+  }
+
+  e.parsed = ret
+  return ret
+}
