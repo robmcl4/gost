@@ -18,6 +18,16 @@ func (p *positiveMatcher) Matches(e *enmime.MIMEBody) bool {
   return true
 }
 
+type negativeMatcher struct  { }
+
+func (n *negativeMatcher) GetId() matchers.MatchId {
+  return "2"
+}
+
+func (n *negativeMatcher) Matches(e *enmime.MIMEBody) bool {
+  return false
+}
+
 func TestInsertMatchers(t *testing.T) {
   Clear()
 
@@ -48,4 +58,38 @@ func TestGetMatchPositive(t *testing.T) {
   InsertMatcher(new(positiveMatcher))
 
   assert.Equal(t, matchers.MatchId("1"), GetMatches(new(enmime.MIMEBody))[0])
+}
+
+func TestGetMatchNegative(t *testing.T) {
+  Clear()
+
+  InsertMatcher(new(negativeMatcher))
+
+  assert.Len(t, GetMatches(new(enmime.MIMEBody)), 0)
+}
+
+func TestGetPositiveMatches(t *testing.T) {
+  Clear()
+
+  InsertMatcher(new(positiveMatcher))
+  InsertMatcher(new(positiveMatcher))
+
+  assert.Len(t, GetMatches(new(enmime.MIMEBody)), 2)
+}
+
+func TestClearRemovesAll(t *testing.T) {
+  Clear()
+
+  assert.Nil(t, matcherListHead)
+  assert.Nil(t, matcherListTail)
+  assert.Equal(t, matcherListSize, int64(0))
+
+  InsertMatcher(new(positiveMatcher))
+  InsertMatcher(new(positiveMatcher))
+
+  Clear()
+
+  assert.Nil(t, matcherListHead)
+  assert.Nil(t, matcherListTail)
+  assert.Equal(t, matcherListSize, int64(0))
 }
