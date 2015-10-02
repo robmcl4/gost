@@ -1,6 +1,7 @@
 package registry
 
 import (
+  "time"
   "sync"
   "testing"
   "github.com/jhillyerd/go.enmime"
@@ -92,4 +93,42 @@ func TestClearRemovesAll(t *testing.T) {
   assert.Nil(t, matcherListHead)
   assert.Nil(t, matcherListTail)
   assert.Equal(t, matcherListSize, int64(0))
+}
+
+func TestGarbageCollectEmpty(t *testing.T) {
+  Clear()
+  GarbageCollect()
+  assert.Nil(t, matcherListHead)
+  assert.Nil(t, matcherListTail)
+  assert.Equal(t, matcherListSize, int64(0))
+}
+
+func TestGarbageCollectsFirstFew(t *testing.T) {
+  Clear()
+  InsertMatcher(new(positiveMatcher))
+  InsertMatcher(new(positiveMatcher))
+
+  matcherListHead.expiry = time.Now().Add(-1000*time.Second)
+  GarbageCollect()
+
+  assert.NotNil(t, matcherListHead)
+  assert.NotNil(t, matcherListTail)
+  assert.Nil(t, matcherListHead.next)
+  assert.Nil(t, matcherListTail.next)
+  assert.Equal(t, int64(1), matcherListSize)
+  assert.Equal(t, matcherListHead, matcherListTail)
+}
+
+func TestGarbageCollectsAll(t *testing.T) {
+  Clear()
+  InsertMatcher(new(positiveMatcher))
+  InsertMatcher(new(positiveMatcher))
+  matcherListHead.expiry = time.Now().Add(-1000*time.Second)
+  matcherListHead.next.expiry = time.Now().Add(-1000*time.Second)
+
+  GarbageCollect()
+
+  assert.Nil(t, matcherListHead)
+  assert.Nil(t, matcherListTail)
+  assert.EqualValues(t, 0, matcherListSize)
 }

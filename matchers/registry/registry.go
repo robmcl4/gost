@@ -56,10 +56,10 @@ func InsertMatcher(m matchers.Matcher) {
   matcherListLock.Lock()
   if matcherListTail == nil {
     matcherListHead = newElem
-    matcherListTail = newElem
   } else {
     matcherListTail.next = newElem
   }
+  matcherListTail = newElem
   matcherListSize++
   matcherListLock.Unlock()
 
@@ -73,7 +73,7 @@ func GarbageCollect() {
   matcherListLock.Lock()
 
   for curr := matcherListHead;
-      curr != nil && curr.expiry.After(time.Now());
+      curr != nil && curr.expiry.Before(time.Now());
       curr = curr.next {
     matcherListHead = curr.next
     matcherListSize--
