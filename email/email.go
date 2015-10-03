@@ -6,6 +6,8 @@ import (
   "github.com/jhillyerd/go.enmime"
 )
 
+type EmailId string
+
 type SMTPEmail struct {
   To       []string
   From     string
@@ -18,7 +20,7 @@ type SMTPEmail struct {
 func (e *SMTPEmail) Parse() (*enmime.MIMEBody, error) {
   if e.parsed != nil {
     // it's memoized
-    return e.parsed
+    return e.parsed, nil
   }
 
   msg, err := mail.ReadMessage(bytes.NewReader(e.Contents))
@@ -32,5 +34,5 @@ func (e *SMTPEmail) Parse() (*enmime.MIMEBody, error) {
   }
 
   e.parsed = ret
-  return ret
+  return ret, nil
 }

@@ -108,7 +108,7 @@ func (c *Client) getEmail() (*email.SMTPEmail, error) {
     return nil, err
   }
   // let's receive data...
-  ret.Data, err = c.readDataBody()
+  ret.Contents, err = c.readDataBody()
   if err != nil {
     return nil, err
   }

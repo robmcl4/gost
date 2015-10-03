@@ -48,19 +48,19 @@ func (c *Client) getSingleCommand() (verb string, extra string, err error) {
 }
 
 // Reads the body of en email that immediately follows the DATA command.
-func (c *Client) readDataBody() (string, error) {
+func (c *Client) readDataBody() ([]byte, error) {
   buf := bytes.Buffer{}
   for {
     line, err := c.in.ReadBytes('\n')
     if err != nil {
-      return "", err
+      return nil, err
     }
     if bytes.Equal(line, []byte(".\r\n")) {
       break
     }
     buf.Write(line)
   }
-  return buf.String(), nil
+  return buf.Bytes(), nil
 }
 
 // Reads from the client until the next newline character.

@@ -15,7 +15,7 @@ type MemoryBackend struct {
   // Read-Write lock for modifying any contents of the backend.
   rwlock       sync.RWMutex
   // Map from Id to Email
-  email_by_id  map[string]*email.SMTPEmail
+  email_by_id  map[email.EmailId]*email.SMTPEmail
   // A queue of email ids and their timestamps, soonest to expire first.
   expiry_queue []timestampedEmail
   // Has this been initialized?
@@ -26,7 +26,7 @@ type MemoryBackend struct {
 
 type timestampedEmail struct {
   // The unique Id in the memory backend.
-  id         string
+  id         email.EmailId
   // The time this Id should expire.
   expiration time.Time
 }
@@ -34,13 +34,13 @@ type timestampedEmail struct {
 func NewMemoryBackend() *MemoryBackend {
   ret := new(MemoryBackend)
   ret.shutdown = make(chan bool, 0)
-  ret.email_by_id = make(map[string]*email.SMTPEmail)
+  ret.email_by_id = make(map[email.EmailId]*email.SMTPEmail)
   ret.expiry_queue = make([]timestampedEmail, 0)
   return ret
 }
 
-func (b *MemoryBackend) PutEmail(e *email.SMTPEmail) (id string, err error) {
-  id       = uuid.NewV4().String()
+func (b *MemoryBackend) PutEmail(e *email.SMTPEmail) (id email.EmailId, err error) {
+  id       = email.EmailId(uuid.NewV4().String())
   ttl_dur := time.Duration(config.GetEmailTTL())*time.Second
   tsEm    := timestampedEmail{id, time.Now().Add(ttl_dur)}
 
@@ -58,7 +58,7 @@ func (b *MemoryBackend) PutEmail(e *email.SMTPEmail) (id string, err error) {
   return
 }
 
-func (b *MemoryBackend) GetEmail(id string) (e *email.SMTPEmail, err error) {
+func (b *MemoryBackend) GetEmail(id email.EmailId) (e *email.SMTPEmail, err error) {
   b.rwlock.RLock()
   e = b.email_by_id[id]
   b.rwlock.RUnlock()
