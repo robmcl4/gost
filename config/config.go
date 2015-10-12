@@ -6,6 +6,7 @@ import (
 )
 
 type configuration struct {
+  sync.RWMutex
   listenAddress string
   listenPort    int
   fqdn          string
@@ -15,54 +16,46 @@ type configuration struct {
 
 // The global configuration state, set with defaults.
 var globalConfig configuration = configuration{
-  "127.0.0.1",
-  587,
-  "mail.example.com",
-  15*60,
-  "memory",
+  listenAddress: "127.0.0.1",
+  listenPort:    587,
+  fqdn:          "mail.example.com",
+  email_ttl:     15*60,
+  backend:       "memory",
 }
-
-// The read-write lock for ensuring safe access to globalConfig
-var globalConfigLock sync.RWMutex = sync.RWMutex{}
 
 
 // Gets the address the server should listen on, for example "127.0.0.1".
 func GetListenAddress() string {
-  globalConfigLock.RLock()
-  ret := globalConfig.listenAddress
-  globalConfigLock.RUnlock()
-  return ret
+  globalConfig.RLock()
+  defer globalConfig.RUnlock()
+  return globalConfig.listenAddress
 }
 
 
 // Gets the port the server should listen on
 func GetListenPort() int {
-  globalConfigLock.RLock()
-  ret := globalConfig.listenPort
-  globalConfigLock.RUnlock()
-  return ret
+  globalConfig.RLock()
+  defer globalConfig.RUnlock()
+  return globalConfig.listenPort
 }
 
 
 func GetFQDN() string {
-  globalConfigLock.RLock()
-  ret := globalConfig.fqdn
-  globalConfigLock.RUnlock()
-  return ret
+  globalConfig.RLock()
+  defer globalConfig.RUnlock()
+  return globalConfig.fqdn
 }
 
 
 func GetEmailTTL() int {
-  globalConfigLock.RLock()
-  ret := globalConfig.email_ttl
-  globalConfigLock.RUnlock()
-  return ret
+  globalConfig.RLock()
+  defer globalConfig.RUnlock()
+  return globalConfig.email_ttl
 }
 
 
 func GetBackendType() string {
-  globalConfigLock.RLock()
-  ret := globalConfig.backend
-  globalConfigLock.RUnlock()
-  return ret
+  globalConfig.RLock()
+  defer globalConfig.RUnlock()
+  return globalConfig.backend
 }
