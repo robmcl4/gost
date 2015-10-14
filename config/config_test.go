@@ -1,6 +1,7 @@
 package config
 
 import (
+  "time"
   "testing"
   "github.com/stretchr/testify/assert"
 )
@@ -29,7 +30,15 @@ func TestDefaultFQDN(t *testing.T) {
 func TestDefaultEmailTTL(t *testing.T) {
   assert.Equal(
     t,
-    15*60,
+    15*60*time.Second,
     GetEmailTTL(),
+    "default email TTL should be 15min")
+}
+
+func TestDefaultMatcherTTL(t *testing.T) {
+  assert.Equal(
+    t,
+    15*60*time.Second,
+    GetMatcherTTL(),
     "default email TTL should be 15min")
 }

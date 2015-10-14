@@ -49,7 +49,7 @@ func GetMatches(e *enmime.MIMEBody) []matchers.MatchId {
 // Inserts a matcher.
 func InsertMatcher(m matchers.Matcher) {
   newElem := &matcherLLElem{
-    expiry:  time.Now().Add(time.Duration(config.GetEmailTTL())*time.Second),
+    expiry:  time.Now().Add(config.GetMatcherTTL()),
     matcher: m,
     next:    nil,
   }

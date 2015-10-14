@@ -2,6 +2,7 @@
 package config
 
 import (
+  "time"
   "sync"
 )
 
@@ -10,7 +11,8 @@ type configuration struct {
   listenAddress string
   listenPort    int
   fqdn          string
-  email_ttl     int // email ttl in seconds
+  email_ttl     time.Duration
+  matcher_ttl   time.Duration
   backend       string
 }
 
@@ -19,7 +21,8 @@ var globalConfig configuration = configuration{
   listenAddress: "127.0.0.1",
   listenPort:    587,
   fqdn:          "mail.example.com",
-  email_ttl:     15*60,
+  email_ttl:     15*60*time.Second,
+  matcher_ttl:   15*60*time.Second,
   backend:       "memory",
 }
 
@@ -47,10 +50,17 @@ func GetFQDN() string {
 }
 
 
-func GetEmailTTL() int {
+func GetEmailTTL() time.Duration {
   globalConfig.RLock()
   defer globalConfig.RUnlock()
   return globalConfig.email_ttl
+}
+
+
+func GetMatcherTTL() time.Duration {
+  globalConfig.RLock()
+  defer globalConfig.RUnlock()
+  return globalConfig.matcher_ttl
 }
 
 

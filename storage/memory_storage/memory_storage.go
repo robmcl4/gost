@@ -40,9 +40,8 @@ func NewMemoryBackend() *MemoryBackend {
 }
 
 func (b *MemoryBackend) PutEmail(e *email.SMTPEmail) (id email.EmailId, err error) {
-  id       = email.EmailId(uuid.NewV4().String())
-  ttl_dur := time.Duration(config.GetEmailTTL())*time.Second
-  tsEm    := timestampedEmail{id, time.Now().Add(ttl_dur)}
+  id = email.EmailId(uuid.NewV4().String())
+  tsEm := timestampedEmail{id, time.Now().Add(config.GetEmailTTL())}
 
   // critical section
   b.rwlock.Lock()
@@ -89,21 +88,30 @@ func (b *MemoryBackend) Initialize() error {
 func (b *MemoryBackend) continuousCleanup() {
   for {
     select {
-    case <- time.After(5*time.Minute):
-      log.Info("Cleaning up memory backend")
-      b.rwlock.Lock()
-      for len(b.expiry_queue) > 0 &&
-          b.expiry_queue[0].expiration.Before(time.Now()) {
-        log.WithFields(log.Fields{
-          "id": b.expiry_queue[0].id,
-        }).Info("Expiring email from memory")
-        delete(b.email_by_id, b.expiry_queue[0].id)
-        b.expiry_queue = b.expiry_queue[1:]
-      }
-      b.rwlock.Unlock()
+    case <- time.After(config.GetEmailTTL()/4):
+      b.doCleanup()
     case <- b.shutdown:
       log.Info("Shutting down memory cleanup")
       return
     }
+  }
+}
+
+// Iterates through the expiration queue and evicts expired entries.
+// Locks the backend.
+func (b *MemoryBackend) doCleanup() {
+  log.Info("Cleaning up memory backend")
+
+  b.rwlock.Lock()
+  defer b.rwlock.Unlock()
+
+  for len(b.expiry_queue) > 0 && b.expiry_queue[0].expiration.Before(time.Now()) {
+
+    log.WithFields(log.Fields{
+      "id": b.expiry_queue[0].id,
+    }).Info("Expiring email from memory")
+
+    delete(b.email_by_id, b.expiry_queue[0].id)
+    b.expiry_queue = b.expiry_queue[1:]
   }
 }
