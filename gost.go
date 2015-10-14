@@ -1,7 +1,6 @@
 package main
 
 import (
-  "fmt"
   "github.com/robmcl4/gost/storage"
   "github.com/robmcl4/gost/email"
   "github.com/robmcl4/gost/smtp_server"
@@ -21,8 +20,8 @@ func main() {
   }
 
   emch := make(chan *email.SMTPEmail, 64)
-  storage.Intercept(backend, emch)
 
+  go intercept(backend, emch)
   err = smtp_server.ReceiveEmail(emch)
   if err != nil {
     log.WithFields(log.Fields{
@@ -32,11 +31,8 @@ func main() {
   }
 }
 
-func emailReceiver(c chan *email.SMTPEmail) {
+func intercept(b storage.Backend, ch chan *email.SMTPEmail) {
   for {
-    eml := <- c
-    log.WithFields(log.Fields{
-      "email": fmt.Sprintf("%+v", eml),
-    }).Info("Got email")
+    b.PutEmail(<- ch)
   }
 }

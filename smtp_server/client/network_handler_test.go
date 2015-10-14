@@ -127,7 +127,7 @@ func TestReadDataBody(t *testing.T) {
   c := Client{nil, bufio.NewReader(reader), bufio.NewWriter(new(bytes.Buffer))}
   got, err := c.readDataBody()
   assert.Nil(t, err)
-  assert.Equal(t, "FOO\r\nBAR\r\n", got)
+  assert.Equal(t, []byte("FOO\r\nBAR\r\n"), got)
 }
 
 func TestCheckCmdSyntaxTooShort(t *testing.T) {
