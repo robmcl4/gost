@@ -9,7 +9,7 @@ func TestAddShutdownListener(t *testing.T) {
   waitgroup.nextId = 0
   waitgroup.chans = make(map[ShutdownId]chan bool)
 
-  id, ch := AddShutdownListener()
+  id, ch := AddShutdownListener("automated test")
   assert.Equal(t, id, ShutdownId(1))
   assert.NotNil(t, ch)
   assert.Len(t, ch, 0)
@@ -17,8 +17,8 @@ func TestAddShutdownListener(t *testing.T) {
 
 func TestAddShutdownListenerTwice(t *testing.T) {
   waitgroup.chans = make(map[ShutdownId]chan bool)
-  id1, ch1 := AddShutdownListener()
-  id2, ch2 := AddShutdownListener()
+  id1, ch1 := AddShutdownListener("automated test")
+  id2, ch2 := AddShutdownListener("automated test")
 
   assert.NotEqual(t, id1, id2, "ids should be different")
   assert.NotNil(t, ch1)
@@ -27,7 +27,7 @@ func TestAddShutdownListenerTwice(t *testing.T) {
 
 func TestRoutineDone(t *testing.T) {
   waitgroup.chans = make(map[ShutdownId]chan bool)
-  id, _ := AddShutdownListener()
+  id, _ := AddShutdownListener("automated test")
 
   assert.Len(t, waitgroup.chans, 1)
 
@@ -38,8 +38,8 @@ func TestRoutineDone(t *testing.T) {
 
 func TestRoutineDoneTwice(t *testing.T) {
   waitgroup.chans = make(map[ShutdownId]chan bool)
-  id1, _ := AddShutdownListener()
-  id2, _ := AddShutdownListener()
+  id1, _ := AddShutdownListener("automated test")
+  id2, _ := AddShutdownListener("automated test")
 
   assert.NotEqual(t, id1, id2)
 
@@ -52,7 +52,7 @@ func TestRoutineDoneTwice(t *testing.T) {
 func TestShutdownNotifiesChans(t *testing.T) {
   waitgroup = tsWaitGroup{}
   waitgroup.chans = make(map[ShutdownId]chan bool)
-  id, ch := AddShutdownListener()
+  id, ch := AddShutdownListener("automated test")
 
   called := false
   cb := func() {
