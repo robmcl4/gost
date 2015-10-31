@@ -40,6 +40,7 @@ func handleClient(conn net.Conn, c chan *email.SMTPEmail) {
   // close on shutdown using strategy from http://stackoverflow.com/a/13419724
   quit := false
   id, shutdownRequested := shutdown.AddShutdownListener("Client processor")
+  defer shutdown.RoutineDone(id)
 
   go func() {
     <- shutdownRequested
@@ -51,7 +52,6 @@ func handleClient(conn net.Conn, c chan *email.SMTPEmail) {
   if err != nil {
     if quit {
       log.Info("Shutting down client")
-      shutdown.RoutineDone(id)
       return
     }
     log.WithFields(log.Fields{
