@@ -24,8 +24,8 @@ type matcherLLElem struct {
 // 1. iterating forward-to-backward
 // 2. inserting to the end of the list
 // 3. deleting from the front of the list
-// Therefore, a linked list can be a reasonably fast
-// implementation of a global concurrent collection.
+// A linked-list allows reads to continue without writing locking the entire
+// collection.
 var matcherListHead *matcherLLElem
 var matcherListTail *matcherLLElem
 var matcherListLock = sync.Mutex{}
