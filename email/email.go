@@ -1,6 +1,7 @@
 package email
 
 import (
+  "fmt"
   "bytes"
   "net/mail"
   "github.com/jhillyerd/go.enmime"
@@ -35,4 +36,13 @@ func (e *SMTPEmail) Parse() (*enmime.MIMEBody, error) {
 
   e.parsed = ret
   return ret, nil
+}
+
+func (e *SMTPEmail) String() string {
+  return fmt.Sprintf(
+    `{to: %v, from: %s, contents: %v}`,
+    e.To,
+    e.From,
+    string(e.Contents),
+  )
 }

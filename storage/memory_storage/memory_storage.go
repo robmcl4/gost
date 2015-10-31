@@ -48,7 +48,7 @@ func (b *MemoryBackend) PutEmail(e *email.SMTPEmail) (id email.EmailId, err erro
   b.rwlock.Unlock()
 
   log.WithFields(log.Fields{
-    "email": fmt.Sprintf("%+v", e),
+    "email": fmt.Sprintf("%v", e),
     "id": id,
   }).Info("Stored email in memory")
 
