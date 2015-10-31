@@ -1,6 +1,7 @@
 package memory_storage
 
 import (
+  "errors"
   "fmt"
   "sync"
   "time"
@@ -21,6 +22,8 @@ type MemoryBackend struct {
   expiry_queue []timestampedEmail
   // Has this been initialized?
   initialized  bool
+  // Channel for manual (non system-wide) shutdown
+  quit         chan bool
 }
 
 type timestampedEmail struct {
@@ -34,10 +37,15 @@ func NewMemoryBackend() *MemoryBackend {
   ret := new(MemoryBackend)
   ret.email_by_id = make(map[email.EmailId]*email.SMTPEmail)
   ret.expiry_queue = make([]timestampedEmail, 0)
+  ret.quit = make(chan bool, 0)
   return ret
 }
 
 func (b *MemoryBackend) PutEmail(e *email.SMTPEmail) (id email.EmailId, err error) {
+  if e == nil {
+    return "", errors.New("Cannot put nil email")
+  }
+
   id = email.EmailId(uuid.NewV4().String())
   tsEm := timestampedEmail{id, time.Now().Add(config.GetEmailTTL())}
 
@@ -77,6 +85,10 @@ func (b *MemoryBackend) Initialize() error {
   return nil
 }
 
+func (b *MemoryBackend) Shutdown() {
+  b.quit <- true
+}
+
 func (b *MemoryBackend) continuousCleanup() {
   id, shutdownRequested := shutdown.AddShutdownListener("MemoryBackend cleanup")
   defer shutdown.RoutineDone(id)
@@ -86,7 +98,10 @@ func (b *MemoryBackend) continuousCleanup() {
     case <- time.After(config.GetEmailTTL()/4):
       b.doCleanup()
     case <- shutdownRequested:
-      log.Info("Shutting down memory cleanup")
+      log.Info("Shutting down memory cleanup with system")
+      return
+    case <- b.quit:
+      log.Info("Quitting memory cleanup")
       return
     }
   }

@@ -26,6 +26,11 @@ type Backend interface {
   // If an error returns, the backend should NOT be used.
   // Initialization should NOT be re-attempted.
   Initialize() (error)
+  // Safely shuts down the backend.
+  // Backends are required to shut down when notified by system-wide shutdown
+  // module. This method is rather to instruct the specific backend connector to
+  // shutdown. Not required to block until shutdown succeeds
+  Shutdown()
 }
 
 // Gets the backend as set in configuration.
