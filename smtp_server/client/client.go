@@ -13,12 +13,12 @@ type Client struct {
   out  *bufio.Writer
 }
 
-type loggedReadWriter struct {
+type middlewareReadWriter struct {
   conn net.Conn
 }
 
-func (lrw *loggedReadWriter) Read(p []byte) (n int, err error) {
-  n, err = lrw.conn.Read(p)
+func (mrw *middlewareReadWriter) Read(p []byte) (n int, err error) {
+  n, err = mrw.conn.Read(p)
   log.WithFields(log.Fields{
     "bytesRead": n,
     "error": err,
@@ -27,8 +27,8 @@ func (lrw *loggedReadWriter) Read(p []byte) (n int, err error) {
   return
 }
 
-func (lrw *loggedReadWriter) Write(p []byte) (n int, err error) {
-  n, err = lrw.conn.Write(p)
+func (mrw *middlewareReadWriter) Write(p []byte) (n int, err error) {
+  n, err = mrw.conn.Write(p)
   log.WithFields(log.Fields{
     "bytesWritten": n,
     "error": err,
@@ -38,8 +38,8 @@ func (lrw *loggedReadWriter) Write(p []byte) (n int, err error) {
 }
 
 func MakeClient(c net.Conn) *Client {
-  lrw := &loggedReadWriter{c}
+  mrw := &middlewareReadWriter{c}
   return &Client{ c,
-                  bufio.NewReaderSize(lrw, 512),
-                  bufio.NewWriter(lrw) }
+                  bufio.NewReaderSize(mrw, 512),
+                  bufio.NewWriter(mrw) }
 }

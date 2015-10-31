@@ -8,6 +8,7 @@ import (
   log "github.com/Sirupsen/logrus"
   "github.com/robmcl4/gost/email"
   "github.com/robmcl4/gost/config"
+  "github.com/robmcl4/gost/config/shutdown"
 )
 
 // An in-memory store for emails.
@@ -20,8 +21,6 @@ type MemoryBackend struct {
   expiry_queue []timestampedEmail
   // Has this been initialized?
   initialized  bool
-  // Should I shut down?
-  shutdown chan bool
 }
 
 type timestampedEmail struct {
@@ -33,7 +32,6 @@ type timestampedEmail struct {
 
 func NewMemoryBackend() *MemoryBackend {
   ret := new(MemoryBackend)
-  ret.shutdown = make(chan bool, 0)
   ret.email_by_id = make(map[email.EmailId]*email.SMTPEmail)
   ret.expiry_queue = make([]timestampedEmail, 0)
   return ret
@@ -68,12 +66,6 @@ func (b *MemoryBackend) GetEmail(id email.EmailId) (e *email.SMTPEmail, err erro
   return
 }
 
-func (b *MemoryBackend) Shutdown() error {
-  log.Info("Shutting down memory backend")
-  b.shutdown <- true
-  return nil
-}
-
 func (b *MemoryBackend) Initialize() error {
   b.rwlock.Lock()
   if b.initialized {
@@ -86,11 +78,14 @@ func (b *MemoryBackend) Initialize() error {
 }
 
 func (b *MemoryBackend) continuousCleanup() {
+  id, shutdownRequested := shutdown.AddShutdownListener("MemoryBackend cleanup")
+  defer shutdown.RoutineDone(id)
+
   for {
     select {
     case <- time.After(config.GetEmailTTL()/4):
       b.doCleanup()
-    case <- b.shutdown:
+    case <- shutdownRequested:
       log.Info("Shutting down memory cleanup")
       return
     }

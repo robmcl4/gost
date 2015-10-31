@@ -26,8 +26,6 @@ type Backend interface {
   // If an error returns, the backend should NOT be used.
   // Initialization should NOT be re-attempted.
   Initialize() (error)
-  // Marks the backend for shutdown. Function blocks until shutdown successful.
-  Shutdown() (error)
 }
 
 // Gets the backend as set in configuration.

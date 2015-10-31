@@ -7,7 +7,6 @@ import (
   "os"
   "os/signal"
   "syscall"
-  "fmt"
   log "github.com/Sirupsen/logrus"
 )
 
@@ -26,7 +25,7 @@ var waitgroup = tsWaitGroup{chans: make(map[ShutdownId]chan bool)}
 
 // Records that a module will be waiting for shutdown.
 // Returns A channel to listen for shutdown requests.
-func AddShutdownListener() (ShutdownId, chan bool) {
+func AddShutdownListener(routineName string) (ShutdownId, chan bool) {
   waitgroup.Lock()
   defer waitgroup.Unlock()
 
@@ -36,6 +35,7 @@ func AddShutdownListener() (ShutdownId, chan bool) {
   waitgroup.chans[id] = ch
   log.WithFields(log.Fields{
     "ShutdownId": id,
+    "routineName": routineName,
   }).Debug("Added subprocess shutdown listener")
   return id, ch
 }
@@ -44,6 +44,10 @@ func AddShutdownListener() (ShutdownId, chan bool) {
 func RoutineDone(id ShutdownId) {
   waitgroup.Lock()
   defer waitgroup.Unlock()
+
+  if _, hasId := waitgroup.chans[id]; !hasId {
+    return
+  }
 
   delete(waitgroup.chans, id)
   log.WithFields(log.Fields{
@@ -67,10 +71,9 @@ func Shutdown() {
 // Blocks and requests shutdown on receiving SIGINT, unblocks on completion
 // of shutdown.
 func ShutdownOnSigint() {
-  ch := make(chan os.Signal, 0)
+  ch := make(chan os.Signal, 1)
   signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
   <- ch
-  <- ch
-  fmt.Println("SIGINT received, shutting down")
+  log.Info("SIGINT received, shutting down")
   Shutdown()
 }
