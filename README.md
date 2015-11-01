@@ -1,6 +1,8 @@
 gost
 ====
 
+[![Build Status](https://travis-ci.org/robmcl4/gost.svg)](https://travis-ci.org/robmcl4/gost)
+
 An SMTP server in Go for testing. Currently in Proof-Of-Concept.
 
 Concept
