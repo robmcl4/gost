@@ -69,3 +69,10 @@ func GetBackendType() string {
   defer globalConfig.RUnlock()
   return globalConfig.backend
 }
+
+func SetListenParams(intrfce string, port int) {
+  globalConfig.Lock()
+  defer globalConfig.Unlock()
+  globalConfig.listenAddress = intrfce
+  globalConfig.listenPort = port
+}

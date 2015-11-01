@@ -5,17 +5,23 @@ import (
   "net"
   "errors"
   "github.com/stretchr/testify/assert"
+  "github.com/robmcl4/gost/config"
 )
 
 // -----------------------------------------------------------------------------
 
 func TestGetServerConnection(t *testing.T) {
+  oldPort := config.GetListenPort()
+  oldAddr := config.GetListenAddress()
+  config.SetListenParams("127.0.0.1", 45432)
+  defer config.SetListenParams(oldAddr, oldPort)
+
   l, err := getServerConnection()
+  defer l.Close()
   assert.NotNil(t, l)
   assert.NoError(t, err)
   assert.Equal(t, "tcp", l.Addr().Network())
-  assert.Equal(t, "127.0.0.1:587", l.Addr().String())
-  l.Close()
+  assert.Equal(t, "127.0.0.1:45432", l.Addr().String())
 }
 
 // -----------------------------------------------------------------------------
