@@ -38,6 +38,16 @@ func (e *SMTPEmail) Parse() (*enmime.MIMEBody, error) {
   return ret, nil
 }
 
+// Parses the Contents of the email, and converts it to a JSON structure.
+// Returns the bytestring of JSON, or an error if conversion failed.
+func (e *SMTPEmail) ParseToJson() ([]byte, error) {
+  parsed, err := e.Parse()
+  if err != nil {
+    return nil, err
+  }
+  return dumpMimeToJson(parsed)
+}
+
 func (e *SMTPEmail) String() string {
   return fmt.Sprintf(
     `{to: %v, from: %s, contents: %v}`,
