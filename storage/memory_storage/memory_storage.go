@@ -2,7 +2,6 @@ package memory_storage
 
 import (
   "errors"
-  "fmt"
   "sync"
   "time"
   "github.com/satori/go.uuid"
@@ -56,7 +55,6 @@ func (b *MemoryBackend) PutEmail(e *email.SMTPEmail) (id email.EmailId, err erro
   b.rwlock.Unlock()
 
   log.WithFields(log.Fields{
-    "email": fmt.Sprintf("%v", e),
     "id": id,
   }).Info("Stored email in memory")
 
@@ -68,7 +66,6 @@ func (b *MemoryBackend) GetEmail(id email.EmailId) (e *email.SMTPEmail, err erro
   e = b.email_by_id[id]
   b.rwlock.RUnlock()
   log.WithFields(log.Fields{
-    "email": fmt.Sprintf("%+v", e),
     "id": id,
   }).Info("Retrieved email")
   return
