@@ -6,7 +6,7 @@ set -e
 rm -f .coverage.out
 echo "mode: count" > .coverage.out
 
-for pkg in "$(go list ./...)"; do
+for pkg in $(go list ./...); do
   go test -covermode=count -coverprofile=.coverage.tmp "$pkg"
   grep -h -v "^mode:" .coverage.tmp >> .coverage.out
   rm -f .coverage.tmp
