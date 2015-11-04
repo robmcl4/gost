@@ -7,9 +7,10 @@ rm -f .coverage.out
 echo "mode: count" > .coverage.out
 
 for pkg in $(go list ./...); do
-  go test -covermode=count -coverprofile=.coverage.tmp "$pkg"
-  grep -h -v "^mode:" .coverage.tmp >> .coverage.out
-  rm -f .coverage.tmp
+  if go test -covermode=count -coverprofile=.coverage.tmp "$pkg"; then
+    grep -h -v "^mode:" .coverage.tmp >> .coverage.out
+    rm -f .coverage.tmp
+  fi
 done
 
 $HOME/gopath/bin/goveralls -coverprofile=.coverage.out -service=travis-ci
