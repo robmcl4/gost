@@ -1,7 +1,7 @@
 gost
 ====
 
-[![Build Status](https://travis-ci.org/robmcl4/gost.svg)](https://travis-ci.org/robmcl4/gost)
+[![Build Status](https://travis-ci.org/robmcl4/gost.svg)](https://travis-ci.org/robmcl4/gost) [![Coverage Status](https://coveralls.io/repos/robmcl4/gost/badge.svg?branch=master&service=github)](https://coveralls.io/github/robmcl4/gost?branch=master)
 
 An SMTP server in Go for testing. Currently in Proof-Of-Concept.
 
