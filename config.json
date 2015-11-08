@@ -1,0 +1,10 @@
+{
+  "listen_address": "127.0.0.1",
+  "listen_port": 587,
+  "fqdn": "mail.example.com",
+  "email_ttl": 15,
+  "matcher_ttl": 15,
+  "backend": {
+    "type": "memory"
+  }
+}

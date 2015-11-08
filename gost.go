@@ -2,6 +2,7 @@ package main
 
 import (
   "github.com/robmcl4/gost/storage"
+  "github.com/robmcl4/gost/config"
   "github.com/robmcl4/gost/config/shutdown"
   "github.com/robmcl4/gost/email"
   "github.com/robmcl4/gost/smtp_server"
@@ -11,6 +12,12 @@ import (
 func main() {
   log.SetLevel(log.DebugLevel)
   log.Info("Starting gost server")
+
+  if err := config.LoadConfigFromFile(); err != nil {
+    log.WithFields(log.Fields{
+      "error": err.Error(),
+    }).Warning("could not load config, using default")
+  }
 
   backend, err := storage.GetBackend()
   if err != nil {
