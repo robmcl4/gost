@@ -17,7 +17,7 @@ func NewToMatcher(addressee string) *ToMatcher {
 // Returns true if this email is addressed to the matcher's addressee
 func (t *ToMatcher) Matches(e *enmime.MIMEBody) bool {
   addressees, err := e.AddressList("to")
-  if err != nil || addressees == nil {
+  if err != nil {
     return false
   }
 

@@ -74,6 +74,22 @@ A body to the message
   assert.False(t, matcher.Matches(e), "should match email")
 }
 
+func TestNegativeMatchNoAddressees(t *testing.T) {
+  e_smtp := email.SMTPEmail{
+    Contents: []byte(
+`Foo: bar
+Bar: baz
+The-Thing: Other-Thing
+
+A body to the message
+`),
+  }
+  e, err := e_smtp.Parse()
+  assert.Nil(t, err)
+  matcher := NewToMatcher("foo@mysite.com")
+  assert.False(t, matcher.Matches(e), "should match email")
+}
+
 func TestCanGetId(t *testing.T) {
   matcher := NewToMatcher("foo@bar.com")
   assert.NotEmpty(t, matcher.GetId())
