@@ -118,5 +118,5 @@ func (c *Client) getEmail() (*email.SMTPEmail, error) {
   }
   return ret, nil
 }
-var fromRegexp = regexp.MustCompile(`[Ff][Rr][Oo][Mm]:<(.+)>`)
-var toRegexp = regexp.MustCompile(`[Tt][Oo]:<(.+)>`)
+var fromRegexp = regexp.MustCompile(`(?i)FROM:<(.+)>`)
+var toRegexp = regexp.MustCompile(`(?i)TO:<(.+)>`)
