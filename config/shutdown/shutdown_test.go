@@ -38,6 +38,14 @@ func TestRoutineDone(t *testing.T) {
   assert.Len(t, waitgroup.chans, 0)
 }
 
+func TestRoutineDoneUnknownId(t *testing.T) {
+  setup()
+
+  assert.Len(t, waitgroup.chans, 0)
+  RoutineDone(1112111)
+  assert.Len(t, waitgroup.chans, 0)
+}
+
 func TestRoutineDoneTwice(t *testing.T) {
   setup()
 
