@@ -2,12 +2,12 @@ package shutdown
 
 import (
   "testing"
+  "os"
   "github.com/stretchr/testify/assert"
 )
 
 func TestAddShutdownListener(t *testing.T) {
-  waitgroup.nextId = 0
-  waitgroup.chans = make(map[ShutdownId]chan bool)
+  setup()
 
   id, ch := AddShutdownListener("automated test")
   assert.Equal(t, id, ShutdownId(1))
@@ -16,7 +16,8 @@ func TestAddShutdownListener(t *testing.T) {
 }
 
 func TestAddShutdownListenerTwice(t *testing.T) {
-  waitgroup.chans = make(map[ShutdownId]chan bool)
+  setup()
+
   id1, ch1 := AddShutdownListener("automated test")
   id2, ch2 := AddShutdownListener("automated test")
 
@@ -26,7 +27,8 @@ func TestAddShutdownListenerTwice(t *testing.T) {
 }
 
 func TestRoutineDone(t *testing.T) {
-  waitgroup.chans = make(map[ShutdownId]chan bool)
+  setup()
+
   id, _ := AddShutdownListener("automated test")
 
   assert.Len(t, waitgroup.chans, 1)
@@ -37,7 +39,8 @@ func TestRoutineDone(t *testing.T) {
 }
 
 func TestRoutineDoneTwice(t *testing.T) {
-  waitgroup.chans = make(map[ShutdownId]chan bool)
+  setup()
+
   id1, _ := AddShutdownListener("automated test")
   id2, _ := AddShutdownListener("automated test")
 
@@ -50,18 +53,42 @@ func TestRoutineDoneTwice(t *testing.T) {
 }
 
 func TestShutdownNotifiesChans(t *testing.T) {
-  waitgroup = tsWaitGroup{}
-  waitgroup.chans = make(map[ShutdownId]chan bool)
+  setup()
+
   id, ch := AddShutdownListener("automated test")
 
   called := false
-  cb := func() {
+  go func() {
     called = <- ch
     RoutineDone(id)
-  }
+  }()
 
-  go cb()
   Shutdown()
 
   assert.True(t, called, "should have gotten true from the chan")
+}
+
+func TestShutdownOnSigint(t *testing.T) {
+  setup()
+
+  id, ch := AddShutdownListener("automated test")
+  signalCh := make(chan os.Signal, 0)
+  oldNotify := notify
+  notify = func(c chan<- os.Signal, _ ...os.Signal) {
+    go func() {
+      c <- <- signalCh
+    }()
+  }
+
+  go ShutdownOnSigint()
+  signalCh <- os.Interrupt
+
+  <- ch
+  RoutineDone(id)
+  notify = oldNotify
+}
+
+func setup() {
+  waitgroup = tsWaitGroup{}
+  waitgroup.chans = make(map[ShutdownId]chan bool)
 }

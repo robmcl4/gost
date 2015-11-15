@@ -68,11 +68,14 @@ func Shutdown() {
   waitgroup.Wait()
 }
 
+// useful for unit testing so actual OS signals can be swapped out
+var notify = signal.Notify
+
 // Blocks and requests shutdown on receiving SIGINT, unblocks on completion
 // of shutdown.
 func ShutdownOnSigint() {
   ch := make(chan os.Signal, 1)
-  signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
+  notify(ch, os.Interrupt, syscall.SIGTERM)
   <- ch
   log.Info("SIGINT received, shutting down")
   Shutdown()
