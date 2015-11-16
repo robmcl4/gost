@@ -6,6 +6,7 @@ import (
   "bufio"
   "testing"
   "errors"
+  "github.com/robmcl4/gost/email"
   "github.com/stretchr/testify/assert"
 )
 
@@ -31,6 +32,12 @@ type errWriter struct { }
 
 func (_ *errWriter) Write(_ []byte) (int, error) {
   return 0, errors.New("Write error!")
+}
+
+type errReader struct { }
+
+func (_ *errReader) Read(_ []byte) (int, error) {
+  return 0, errors.New("Read error!")
 }
 
 func TestCloseTerminatesConnection(t *testing.T) {
@@ -79,4 +86,36 @@ func TestCloseIgnoresWriteErrors(t *testing.T) {
   err := c.Close()
   assert.NoError(t, err)
   assert.True(t, mycon.closed, "Close() should have been called")
+}
+
+func TestOpensWithServiceReady(t *testing.T) {
+  mybuf := new(bytes.Buffer)
+  c := Client{
+    &myConn{},
+    bufio.NewReader(new(bytes.Buffer)),
+    bufio.NewWriter(mybuf),
+  }
+  ch := make(chan *email.SMTPEmail, 1)
+  assert.Error(t, c.BeginReceive(ch))
+  assert.Len(t, ch, 0)
+  assert.Equal(t, "220 mail.example.com ESMTP\r\n", mybuf.String())
+}
+
+func TestHelo(t *testing.T) {
+  output := new(bytes.Buffer)
+  input := bytes.NewBufferString("HELO\r\n")
+  c := Client{
+    &myConn{},
+    bufio.NewReader(input),
+    bufio.NewWriter(output),
+  }
+  ch := make(chan *email.SMTPEmail, 1)
+  assert.Error(t, c.BeginReceive(ch))
+  assert.Len(t, ch, 0)
+  assert.Equal(
+    t,
+    "220 mail.example.com ESMTP\r\n" +
+    "250 Ok\r\n",
+    output.String(),
+  )
 }
