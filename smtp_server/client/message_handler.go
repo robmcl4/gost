@@ -43,11 +43,9 @@ func (c *Client) handleHandshake() error {
     return err
   }
   if verb == "HELO" {
-    err = c.notifyOk()
-    return err
+    return c.notifyOk()
   } else if verb == "EHLO" {
-    err = c.notifyEhlo()
-    return err
+    return c.notifyEhlo()
   } else {
     c.notifyBadSequence()
     return fmt.Errorf("Expected HELO but got %s", verb)

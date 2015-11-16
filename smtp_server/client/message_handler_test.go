@@ -101,6 +101,19 @@ func TestOpensWithServiceReady(t *testing.T) {
   assert.Equal(t, "220 mail.example.com ESMTP\r\n", mybuf.String())
 }
 
+func TestPassesErrorIfCannotWrite(t *testing.T) {
+  c := Client{
+    &myConn{},
+    bufio.NewReader(new(errReader)),
+    bufio.NewWriter(new(bytes.Buffer)),
+  }
+  ch := make(chan *email.SMTPEmail, 1)
+  err := c.BeginReceive(ch)
+  assert.Error(t, err)
+  assert.Equal(t, "Read error!", err.Error())
+  assert.Len(t, ch, 0)
+}
+
 func TestHelo(t *testing.T) {
   output := new(bytes.Buffer)
   input := bytes.NewBufferString("HELO\r\n")
@@ -116,6 +129,45 @@ func TestHelo(t *testing.T) {
     t,
     "220 mail.example.com ESMTP\r\n" +
     "250 Ok\r\n",
+    output.String(),
+  )
+}
+
+func TestEhlo(t *testing.T) {
+  output := new(bytes.Buffer)
+  input := bytes.NewBufferString("EHLO\r\n")
+  c := Client{
+    &myConn{},
+    bufio.NewReader(input),
+    bufio.NewWriter(output),
+  }
+  ch := make(chan *email.SMTPEmail, 1)
+  assert.Error(t, c.BeginReceive(ch))
+  assert.Len(t, ch, 0)
+  assert.Equal(
+    t,
+    "220 mail.example.com ESMTP\r\n" +
+    "250-mail.example.com supports TWO extensions:\r\n" +
+    "250-8BITMIME\r\n",
+    output.String(),
+  )
+}
+
+func TestUnknownHandshakeVerb(t *testing.T) {
+  output := new(bytes.Buffer)
+  input := bytes.NewBufferString("FOOO\r\n")
+  c := Client{
+    &myConn{},
+    bufio.NewReader(input),
+    bufio.NewWriter(output),
+  }
+  ch := make(chan *email.SMTPEmail, 1)
+  assert.Error(t, c.BeginReceive(ch))
+  assert.Len(t, ch, 0)
+  assert.Equal(
+    t,
+    "220 mail.example.com ESMTP\r\n" +
+    "503 Bad Sequence\r\n",
     output.String(),
   )
 }
