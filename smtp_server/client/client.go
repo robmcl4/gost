@@ -1,20 +1,22 @@
 package client
 
 import (
-  "net"
+  "io"
   "bufio"
   "fmt"
   log "github.com/Sirupsen/logrus"
 )
 
+const BUFFER_SIZE = 512
+
 type Client struct {
-  conn net.Conn
+  conn io.ReadWriteCloser
   in   *bufio.Reader
   out  *bufio.Writer
 }
 
 type middlewareReadWriter struct {
-  conn net.Conn
+  conn io.ReadWriteCloser
 }
 
 func (mrw *middlewareReadWriter) Read(p []byte) (n int, err error) {
@@ -37,9 +39,9 @@ func (mrw *middlewareReadWriter) Write(p []byte) (n int, err error) {
   return
 }
 
-func MakeClient(c net.Conn) *Client {
+func MakeClient(c io.ReadWriteCloser) *Client {
   mrw := &middlewareReadWriter{c}
   return &Client{ c,
-                  bufio.NewReaderSize(mrw, 512),
+                  bufio.NewReaderSize(mrw, BUFFER_SIZE),
                   bufio.NewWriter(mrw) }
 }
