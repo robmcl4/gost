@@ -2,7 +2,6 @@ package registry
 
 import (
   "time"
-  "sync"
   "testing"
   "github.com/jhillyerd/go.enmime"
   "github.com/stretchr/testify/assert"
@@ -32,25 +31,10 @@ func (n *negativeMatcher) Matches(e *enmime.MIMEBody) bool {
 func TestInsertMatchers(t *testing.T) {
   Clear()
 
-  wg := new(sync.WaitGroup)
-
-  // try to put a bunch of matchers in at once, make sure they
-  // all get in
-  var putMatcher = func() {
-    InsertMatcher(new(positiveMatcher))
-    wg.Done()
-  }
-
-  for i := 0; i < 1000; i++ {
-    wg.Add(1)
-    go putMatcher()
-  }
-
-  // make sure they all finish
-  wg.Wait()
+  InsertMatcher(new(positiveMatcher))
 
   // make sure the list has 100 things in it
-  assert.Equal(t, int64(1000), Size(), "should have 1000 things in it")
+  assert.EqualValues(t, 1, Size(), "should have 1 thing in it")
 }
 
 func TestGetMatchPositive(t *testing.T) {
