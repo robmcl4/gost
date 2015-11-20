@@ -104,13 +104,13 @@ func TestOpensWithServiceReady(t *testing.T) {
 func TestPassesErrorIfCannotWrite(t *testing.T) {
   c := Client{
     &myConn{},
-    bufio.NewReader(new(errReader)),
-    bufio.NewWriter(new(bytes.Buffer)),
+    bufio.NewReader(new(bytes.Buffer)),
+    bufio.NewWriter(new(errWriter)),
   }
   ch := make(chan *email.SMTPEmail, 1)
   err := c.BeginReceive(ch)
   assert.Error(t, err)
-  assert.Equal(t, "Read error!", err.Error())
+  assert.Equal(t, "Write error!", err.Error())
   assert.Len(t, ch, 0)
 }
 
