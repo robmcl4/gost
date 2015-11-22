@@ -115,59 +115,89 @@ func TestPassesErrorIfCannotWrite(t *testing.T) {
 }
 
 func TestHelo(t *testing.T) {
-  output := new(bytes.Buffer)
-  input := bytes.NewBufferString("HELO\r\n")
-  c := Client{
-    &myConn{},
-    bufio.NewReader(input),
-    bufio.NewWriter(output),
-  }
-  ch := make(chan *email.SMTPEmail, 1)
-  assert.Error(t, c.BeginReceive(ch))
+  ch, out, err := getClientOutput("HELO mail.example.com\r\n")
+  assert.Error(t, err)
   assert.Len(t, ch, 0)
   assert.Equal(
     t,
     "220 mail.example.com ESMTP\r\n" +
     "250 Ok\r\n",
-    output.String(),
+    out,
   )
 }
 
 func TestEhlo(t *testing.T) {
-  output := new(bytes.Buffer)
-  input := bytes.NewBufferString("EHLO\r\n")
-  c := Client{
-    &myConn{},
-    bufio.NewReader(input),
-    bufio.NewWriter(output),
-  }
-  ch := make(chan *email.SMTPEmail, 1)
-  assert.Error(t, c.BeginReceive(ch))
+  ch, out, err := getClientOutput("EHLO\r\n")
+  assert.Error(t, err)
   assert.Len(t, ch, 0)
   assert.Equal(
     t,
     "220 mail.example.com ESMTP\r\n" +
-    "250-mail.example.com supports TWO extensions:\r\n" +
+    "250-mail.example.com supports ONE extension:\r\n" +
     "250-8BITMIME\r\n",
-    output.String(),
+    out,
   )
 }
 
 func TestUnknownHandshakeVerb(t *testing.T) {
-  output := new(bytes.Buffer)
-  input := bytes.NewBufferString("FOOO\r\n")
-  c := Client{
-    &myConn{},
-    bufio.NewReader(input),
-    bufio.NewWriter(output),
-  }
-  ch := make(chan *email.SMTPEmail, 1)
-  assert.Error(t, c.BeginReceive(ch))
+  ch, out, err := getClientOutput("FOOO\r\n")
+  assert.Error(t, err)
   assert.Len(t, ch, 0)
   assert.Equal(
     t,
     "220 mail.example.com ESMTP\r\n" +
     "503 Bad Sequence\r\n",
-    output.String(),
+    out,
   )
+}
+
+func TestSendSimpleEmail(t *testing.T) {
+  ch, out, err := getClientOutput(
+    "HELO mail.example.com\r\n" +
+    "MAIL FROM:<foo@example.com>\r\n" +
+    "RCPT TO:<alice@example.com>\r\n" +
+    "DATA\r\n" +
+    "From: <foo@example.com>\r\n" +
+    "To: <alice@example.com>\r\n" +
+    "Subject: Test\r\n" +
+    "\r\n" +
+    "Hey what's up\r\n" +
+    ".\r\n" +
+    "QUIT\r\n",
+  )
+  assert.Error(t, err)
+  assert.Equal(t, "Client asked to quit", err.Error())
+  assert.Len(t, ch, 1)
+  assert.Equal(
+    t,
+    "220 mail.example.com ESMTP\r\n" +
+    "250 Ok\r\n" +
+    "250 Ok\r\n" +
+    "250 Ok\r\n" +
+    "354 Start Mail Input\r\n" +
+    "250 Ok\r\n",
+    out,
+  )
+  em := <- ch
+  assert.NotNil(t, em)
+  assert.Len(t, em.To, 1)
+  assert.Equal(t, "alice@example.com", em.To[0])
+  assert.Equal(t, "foo@example.com", em.From)
+  assert.NotNil(t, em.Contents)
+}
+
+func getClientOutput(in string) (ch chan *email.SMTPEmail,
+                                 output string,
+                                 err error) {
+  outb := new(bytes.Buffer)
+  inb := bytes.NewBufferString(in)
+  c := Client{
+    &myConn{},
+    bufio.NewReader(inb),
+    bufio.NewWriter(outb),
+  }
+  ch = make(chan *email.SMTPEmail, 10)
+  err = c.BeginReceive(ch)
+  output = outb.String()
+  return
 }

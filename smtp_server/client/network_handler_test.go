@@ -82,6 +82,15 @@ func TestClientNotifyTerminatingConnection(t *testing.T) {
                mybuf.String())
 }
 
+func TestClientNotifyCloseConnection(t *testing.T) {
+  mybuf := new(bytes.Buffer)
+  c := Client{nil, bufio.NewReader(new(bytes.Buffer)), bufio.NewWriter(mybuf)}
+  c.notifyCloseConnection()
+  assert.Equal(t,
+               "221 Bye\r\n",
+               mybuf.String())
+}
+
 func TestGetCommand(t *testing.T) {
   reader := bytes.NewBufferString("MAIL FROM:<foo@bar.com>\r\n")
   c := Client{nil, bufio.NewReader(reader), bufio.NewWriter(new(bytes.Buffer))}
@@ -109,7 +118,6 @@ func TestGetCommandQUIT(t *testing.T) {
   _, _, err := c.getCommand()
   assert.NotNil(t, err)
 }
-
 
 func TestGetCommandError(t *testing.T) {
   reader := bytes.NewBufferString("FO\r\n")

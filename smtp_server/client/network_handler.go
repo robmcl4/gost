@@ -89,7 +89,7 @@ func (c *Client) notifyOk() error {
 }
 
 func (c *Client) notifyEhlo() error {
-  toWrite := fmt.Sprintf("250-%s supports TWO extensions:\r\n",
+  toWrite := fmt.Sprintf("250-%s supports ONE extension:\r\n",
                          config.GetFQDN()) +
              "250-8BITMIME\r\n"
   _, err := c.out.WriteString(toWrite)
@@ -130,6 +130,15 @@ func (c *Client) notifyBadSequence() error {
 func (c *Client) notifyTerminateConnection() error {
   _, err := c.out.WriteString("421 " +
                               "Service Unavailable: Terminating Connection\r\n")
+  if err != nil {
+    return err
+  }
+  err = c.out.Flush()
+  return err
+}
+
+func (c *Client) notifyCloseConnection() error {
+  _, err := c.out.WriteString("221 Bye\r\n")
   if err != nil {
     return err
   }
