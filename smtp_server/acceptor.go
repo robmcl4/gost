@@ -9,9 +9,8 @@ import (
 )
 
 func getServerConnection() (net.Listener, error) {
-  addr := fmt.Sprintf("%s:%d",
-                      config.GetListenAddress(),
-                      config.GetListenPort())
+  host, port := config.GetListenParams()
+  addr := fmt.Sprintf("%s:%d", host, port)
   return net.Listen("tcp", addr)
 }
 

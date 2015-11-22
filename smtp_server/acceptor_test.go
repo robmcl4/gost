@@ -12,8 +12,7 @@ import (
 // -----------------------------------------------------------------------------
 
 func TestGetServerConnection(t *testing.T) {
-  oldPort := config.GetListenPort()
-  oldAddr := config.GetListenAddress()
+  oldAddr, oldPort := config.GetListenParams()
   config.SetListenParams("127.0.0.1", 45432)
   defer config.SetListenParams(oldAddr, oldPort)
 

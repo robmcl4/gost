@@ -31,22 +31,12 @@ var globalConfig configuration = configuration{
   backend:       "memory",
 }
 
-
 // Gets the address the server should listen on, for example "127.0.0.1".
-func GetListenAddress() string {
+func GetListenParams() (host string, port int) {
   globalConfig.RLock()
   defer globalConfig.RUnlock()
-  return globalConfig.listenAddress
+  return globalConfig.listenAddress, globalConfig.listenPort
 }
-
-
-// Gets the port the server should listen on
-func GetListenPort() int {
-  globalConfig.RLock()
-  defer globalConfig.RUnlock()
-  return globalConfig.listenPort
-}
-
 
 func GetFQDN() string {
   globalConfig.RLock()
@@ -54,20 +44,17 @@ func GetFQDN() string {
   return globalConfig.fqdn
 }
 
-
 func GetEmailTTL() time.Duration {
   globalConfig.RLock()
   defer globalConfig.RUnlock()
   return globalConfig.emailTtl
 }
 
-
 func GetMatcherTTL() time.Duration {
   globalConfig.RLock()
   defer globalConfig.RUnlock()
   return globalConfig.matcherTtl
 }
-
 
 func GetBackendType() string {
   globalConfig.RLock()
