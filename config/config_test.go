@@ -1,6 +1,9 @@
 package config
 
 import (
+  "strings"
+  "os"
+  "io/ioutil"
   "time"
   "testing"
   "github.com/stretchr/testify/assert"
@@ -54,4 +57,54 @@ func TestSetListenParams(t *testing.T) {
   addr, port := GetListenParams()
   assert.Equal(t, 11211, port)
   assert.Equal(t, "192.168.1.1", addr)
+}
+
+func TestMissingFileGivesError(t *testing.T) {
+  teardownConfigFile()
+  _, err := detectFileLocation()
+  assert.Error(t, err)
+}
+
+func TestFindsFile(t *testing.T) {
+  assert.NoError(t, putConfigFile())
+  defer teardownConfigFile()
+  loc, err := detectFileLocation()
+  assert.True(t, strings.HasSuffix(loc, "config.json"), loc)
+  assert.NoError(t, err)
+}
+
+func TestLoadsBasicFile(t *testing.T) {
+  assert.NoError(t, putConfigFile())
+  defer teardownConfigFile()
+  oldConfig := globalConfig
+  defer func() {
+    globalConfig = oldConfig
+  }()
+
+  err := LoadConfigFromFile()
+  assert.NoError(t, err)
+}
+
+func putConfigFile() error {
+  return ioutil.WriteFile(
+    "config.json",
+    []byte(
+`{
+  "listen_address": "1.1.1.1",
+  "listen_port": 12345,
+  "fqdn": "foobar.example.com",
+  "email_ttl": 11,
+  "matcher_ttl": 11,
+  "backend": {
+    "type": "memory"
+  }
+}
+`,
+    ),
+    0644,
+  )
+}
+
+func teardownConfigFile() error {
+  return os.Remove("config.json")
 }
