@@ -95,9 +95,7 @@ func putConfigFile() error {
   "fqdn": "foobar.example.com",
   "email_ttl": 11,
   "matcher_ttl": 11,
-  "backend": {
-    "type": "memory"
-  }
+  "backendType": "memory"
 }
 `,
     ),

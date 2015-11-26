@@ -18,7 +18,7 @@ type configuration struct {
   fqdn          string
   emailTtl      time.Duration
   matcherTtl    time.Duration
-  backend       string
+  backendType   string
 }
 
 // The global configuration state, set with defaults.
@@ -28,7 +28,7 @@ var globalConfig configuration = configuration{
   fqdn:          "mail.example.com",
   emailTtl:      15*60*time.Second,
   matcherTtl:    15*60*time.Second,
-  backend:       "memory",
+  backendType:   "memory",
 }
 
 // Gets the address the server should listen on, for example "127.0.0.1".
@@ -59,7 +59,7 @@ func GetMatcherTTL() time.Duration {
 func GetBackendType() string {
   globalConfig.RLock()
   defer globalConfig.RUnlock()
-  return globalConfig.backend
+  return globalConfig.backendType
 }
 
 func SetListenParams(intrfce string, port int) {
@@ -67,6 +67,27 @@ func SetListenParams(intrfce string, port int) {
   defer globalConfig.Unlock()
   globalConfig.listenAddress = intrfce
   globalConfig.listenPort = port
+}
+
+// Only used to deserialize JSON config files
+type jsonConfig struct {
+  listenAddress string
+  listenPort    int
+  fqdn          string
+  emailTtl      float64
+  matcherTtl    float64
+  backendType   string
+}
+
+func (js *jsonConfig) toConfiguration() configuration {
+  return configuration{
+    listenAddress: js.listenAddress,
+    listenPort:    js.listenPort,
+    fqdn:          js.fqdn,
+    emailTtl:      time.Duration(js.emailTtl)*time.Minute,
+    matcherTtl:    time.Duration(js.emailTtl)*time.Minute,
+    backendType:   js.backendType,
+  }
 }
 
 // Loads configuration from an auto-located file.
@@ -83,84 +104,16 @@ func LoadConfigFromFile() error {
   if err != nil {
     return err
   }
-  conf := make(map[string]interface{})
-  if err = json.Unmarshal(bindata, &conf); err != nil {
+  conf := new(jsonConfig)
+  if err = json.Unmarshal(bindata, conf); err != nil {
     return err
-  }
-
-  newConfig := configuration{}
-  if val, err := get_string(conf, "listen_address"); err == nil {
-    newConfig.listenAddress = val
-  } else {
-    return err
-  }
-  if val, err := get_int(conf, "listen_port"); err == nil {
-    newConfig.listenPort = val
-  } else {
-    return err
-  }
-  if val, err := get_string(conf, "fqdn"); err == nil {
-    newConfig.fqdn = val
-  } else {
-    return err
-  }
-  if val, err := get_int(conf, "email_ttl"); err == nil {
-    newConfig.emailTtl = time.Duration(val)*time.Minute
-  } else {
-    return err
-  }
-  if val, err := get_int(conf, "matcher_ttl"); err == nil {
-    newConfig.matcherTtl = time.Duration(val)*time.Minute
-  } else {
-    return err
-  }
-  if val, ok := conf["backend"]; ok {
-    if m, ok := val.(map[string]interface{}); ok {
-      if backend, err := get_string(m, "type"); err == nil {
-        newConfig.backend = backend
-      } else {
-        return err
-      }
-    } else {
-      return errors.New("backend is not a string")
-    }
-  } else {
-    return errors.New("no backend section found")
   }
 
   oldConfig := globalConfig
   oldConfig.Lock()
-  globalConfig = newConfig
-  oldConfig.Unlock()
+  defer oldConfig.Unlock()
+  globalConfig = conf.toConfiguration()
   return nil
-}
-
-func get_int(m map[string]interface{}, key string) (int, error) {
-  if m == nil {
-    return 0, errors.New("could find key=\""+key+"\" for nil map")
-  }
-  if val, ok := m[key]; ok {
-    if i, ok := val.(float64); ok {
-      return int(i), nil
-    } else {
-      return 0, errors.New("key was not int key=\""+key+"\"")
-    }
-  }
-  return 0, errors.New("could not find key=\""+key+"\" in map")
-}
-
-func get_string(m map[string]interface{}, key string) (string, error) {
-  if m == nil {
-    return "", errors.New("could find key=\""+key+"\" for nil map")
-  }
-  if val, ok := m[key]; ok {
-    if str, ok := val.(string); ok {
-      return str, nil
-    } else {
-      return "", errors.New("key was not string key=\""+key+"\"")
-    }
-  }
-  return "", errors.New("could not find key=\""+key+"\" in map")
 }
 
 // Attempts to detect location of configuration file.
