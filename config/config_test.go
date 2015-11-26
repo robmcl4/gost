@@ -65,6 +65,34 @@ func TestMissingFileGivesError(t *testing.T) {
   assert.Error(t, err)
 }
 
+func TestMissingFileCannotLoad(t *testing.T) {
+  teardownConfigFile()
+  oldConfig := globalConfig
+  err := LoadConfigFromFile()
+  assert.Error(t, err)
+  assert.Equal(t, oldConfig, globalConfig)
+}
+
+func TestUnreadableFileCannotLoad(t *testing.T) {
+  teardownConfigFile()
+  assert.NoError(t, ioutil.WriteFile("config.json", []byte("{}"), 0222))
+  oldConfig := globalConfig
+  err := LoadConfigFromFile()
+  assert.Error(t, err)
+  assert.Equal(t, oldConfig, globalConfig)
+  assert.NoError(t, os.Remove("config.json"))
+}
+
+func TestNonJsonCannotLoad(t *testing.T) {
+  teardownConfigFile()
+  assert.NoError(t, ioutil.WriteFile("config.json", []byte("uhhh i'm not json"), 0644))
+  oldConfig := globalConfig
+  err := LoadConfigFromFile()
+  assert.Error(t, err)
+  assert.Equal(t, oldConfig, globalConfig)
+  assert.NoError(t, os.Remove("config.json"))
+}
+
 func TestFindsFile(t *testing.T) {
   assert.NoError(t, putConfigFile())
   defer teardownConfigFile()
